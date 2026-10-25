@@ -1,0 +1,3241 @@
+<!-- <!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bản đồ điều hành ứng cứu – Quảng Ngãi</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <style>
+      :root {
+        --navy: #10243b;
+        --blue: #2563eb;
+        --red: #dc3545;
+        --orange: #f97316;
+        --green: #138a5b;
+        --ink: #182536;
+        --muted: #627184;
+        --line: #dce3eb;
+        --panel: #ffffff;
+        --canvas: #edf2f7;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+        color: var(--ink);
+        background: var(--canvas);
+      }
+      button,
+      input,
+      textarea {
+        font: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      .topbar {
+        min-height: 76px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 12px 20px;
+        background: var(--navy);
+        color: #fff;
+        box-shadow: 0 4px 16px #0b1e3329;
+        position: relative;
+        z-index: 500;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 240px;
+      }
+      .brand-mark {
+        height: 42px;
+        width: 42px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        background: #ffffff18;
+        border: 1px solid #ffffff2f;
+        font-size: 23px;
+      }
+      .brand h1 {
+        font-size: 17px;
+        margin: 0 0 4px;
+        letter-spacing: 0.1px;
+      }
+      .brand p {
+        margin: 0;
+        color: #c7d4e2;
+        font-size: 12px;
+      }
+      .keybar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+      .btn {
+        border: 0;
+        border-radius: 9px;
+        padding: 10px 12px;
+        font-weight: 650;
+        font-size: 12px;
+        transition:
+          transform 0.12s ease,
+          opacity 0.12s ease,
+          background 0.15s ease;
+      }
+      .btn:active {
+        transform: translateY(1px);
+      }
+      .btn-primary {
+        background: #2563eb;
+        color: white;
+      }
+      .btn-light {
+        background: #eef3f8;
+        color: #25364b;
+        border: 1px solid #d9e2ec;
+      }
+      .btn-layer {
+        background: #1e3a5f;
+        color: #d6e4f0;
+        border: 1px solid #33547d;
+      }
+      .btn-layer.active {
+        background: #2563eb;
+        color: #ffffff;
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 2px #60a5fa40;
+      }
+      .btn-danger {
+        background: #fff0f0;
+        color: #b42332;
+        border: 1px solid #ffd0d4;
+      }
+      .btn-quiet {
+        border: 1px solid var(--line);
+        color: #35455a;
+        background: #fff;
+      }
+      .btn-add {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 10px;
+        width: 100%;
+        text-align: left;
+        padding: 11px 12px;
+        border: 1px solid #dce4ed;
+        color: #1d2b3b;
+        background: white;
+      }
+      .btn-add.active {
+        outline: 3px solid #93c5fd8a;
+        border-color: #3b82f6;
+        background: #eff6ff;
+      }
+      .btn-add .plus {
+        display: grid;
+        place-items: center;
+        font-size: 19px;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+      .plus.gather {
+        background: var(--blue);
+      }
+      .plus.response {
+        background: var(--orange);
+      }
+      .layout {
+        height: calc(100vh - 76px);
+        min-height: 490px;
+        display: grid;
+        grid-template-columns: 355px minmax(0, 1fr);
+      }
+      /* Đóng Sidebar, cho bản đồ chiếm toàn bộ chiều rộng */
+      .layout.sidebar-collapsed {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .layout.sidebar-collapsed .sidebar {
+        display: none;
+      }
+      .sidebar {
+        overflow-y: auto;
+        padding: 14px;
+        background: #f6f8fb;
+        border-right: 1px solid #dbe3ec;
+      }
+      .section {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 13px;
+        padding: 13px;
+        margin-bottom: 12px;
+        box-shadow: 0 2px 5px #20364a08;
+      }
+      .section-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 13px;
+        font-weight: 800;
+        margin: 0 0 11px;
+        color: #213248;
+      }
+      .section-title small {
+        color: var(--muted);
+        font-weight: 600;
+        font-size: 11px;
+      }
+      .map-state {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px;
+        border-radius: 10px;
+        background: #edfdf5;
+        border: 1px solid #c5f0db;
+        color: #126342;
+        font-size: 12px;
+        line-height: 1.45;
+      }
+      .map-state .state-icon {
+        font-size: 17px;
+      }
+      .help {
+        color: var(--muted);
+        font-size: 11.5px;
+        line-height: 1.55;
+        margin: 9px 0 0;
+      }
+      .action-list {
+        display: grid;
+        gap: 8px;
+      }
+      .active-hint {
+        display: none;
+        padding: 9px 10px;
+        border-radius: 8px;
+        background: #eaf3ff;
+        border: 1px solid #c5ddff;
+        color: #1b4e91;
+        font-size: 12px;
+        line-height: 1.45;
+        margin-top: 9px;
+      }
+      .active-hint.show {
+        display: block;
+      }
+      .legend {
+        display: grid;
+        gap: 8px;
+      }
+      .legend-row {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 12px;
+      }
+      .legend-dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        box-shadow: 0 0 0 3px #00000008;
+        flex: 0 0 auto;
+      }
+      .point-list {
+        display: grid;
+        gap: 9px;
+      }
+      .point-card {
+        border: 1px solid #e0e6ee;
+        border-radius: 11px;
+        padding: 10px;
+        background: #fff;
+      }
+      .point-head {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      .point-bullet {
+        width: 25px;
+        height: 25px;
+        display: grid;
+        place-items: center;
+        color: white;
+        font-size: 10px;
+        font-weight: 800;
+        border-radius: 9px;
+        flex: 0 0 auto;
+      }
+      .point-meta {
+        flex: 1;
+        min-width: 0;
+      }
+      .point-name {
+        font-size: 12px;
+        font-weight: 800;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+      }
+      .point-type {
+        color: #6a7888;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.45px;
+        margin-top: 3px;
+      }
+      .point-note {
+        color: #56677a;
+        font-size: 11px;
+        line-height: 1.45;
+        margin: 8px 0;
+        overflow-wrap: anywhere;
+        white-space: pre-wrap;
+      }
+      .coords {
+        background: #f4f7fa;
+        color: #53657a;
+        border-radius: 6px;
+        padding: 5px 6px;
+        font:
+          10px ui-monospace,
+          SFMono-Regular,
+          Consolas,
+          monospace;
+      }
+      .point-actions {
+        display: flex;
+        gap: 6px;
+        margin-top: 8px;
+      }
+      .point-actions .btn {
+        flex: 1;
+        padding: 7px 8px;
+        font-size: 11px;
+      }
+      .route-controls {
+        display: grid;
+        gap: 8px;
+      }
+      .route-card {
+        border: 1px solid #e0e6ee;
+        border-radius: 11px;
+        padding: 10px;
+        background: #fff;
+      }
+      .route-swatch {
+        display: inline-block;
+        width: 28px;
+        height: 5px;
+        border-radius: 4px;
+        margin-right: 7px;
+        vertical-align: middle;
+      }
+      .route-card-title {
+        font-size: 12px;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+      }
+      .route-card-note {
+        color: #56677a;
+        font-size: 11px;
+        line-height: 1.45;
+        margin: 7px 0;
+        white-space: pre-wrap;
+      }
+      .route-card .btn {
+        padding: 7px 8px;
+        font-size: 11px;
+      }
+      .route-form-field {
+        display: grid;
+        gap: 5px;
+        margin: 8px 0;
+        font-size: 12px;
+        font-weight: 700;
+        color: #35455a;
+      }
+      .route-form-field input,
+      .route-form-field textarea {
+        width: 100%;
+        padding: 9px;
+        border: 1px solid #cfd9e4;
+        border-radius: 8px;
+      }
+      .empty-list {
+        color: var(--muted);
+        text-align: center;
+        padding: 20px 10px;
+        border: 1px dashed #cdd7e3;
+        border-radius: 10px;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .foot-actions {
+        display: flex;
+        gap: 7px;
+        flex-wrap: wrap;
+      }
+      .foot-actions .btn {
+        flex: 1;
+      }
+      .map-wrap {
+        position: relative;
+        min-width: 0;
+        background: #dbe5ed;
+      }
+      #map {
+        height: 100%;
+        width: 100%;
+        min-height: 420px;
+        background: #d9e2e9;
+      }
+      .map-chip {
+        position: absolute;
+        z-index: 400;
+        left: 54px;
+        top: 14px;
+        padding: 9px 12px;
+        border-radius: 11px;
+        color: #17283b;
+        background: #fffffff0;
+        backdrop-filter: blur(6px);
+        border: 1px solid #ffffff;
+        box-shadow: 0 5px 18px #162b3d24;
+        pointer-events: none;
+        max-width: min(470px, calc(100% - 70px));
+      }
+      .map-chip strong {
+        display: block;
+        font-size: 12px;
+        margin-bottom: 3px;
+      }
+      .map-chip span {
+        display: block;
+        color: #56677a;
+        font-size: 11px;
+        line-height: 1.45;
+      }
+      .map-bottom {
+        position: absolute;
+        right: 14px;
+        bottom: 13px;
+        z-index: 400;
+        padding: 8px 10px;
+        font-size: 10px;
+        color: #415267;
+        border-radius: 8px;
+        background: #ffffffeb;
+        box-shadow: 0 3px 12px #162b3d1c;
+        pointer-events: none;
+      }
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        background: #0b192b83;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+      }
+      .modal-backdrop.open {
+        display: flex;
+      }
+      .modal {
+        width: min(460px, 100%);
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 22px 70px #0004;
+        padding: 20px;
+      }
+      .modal h2 {
+        margin: 0 0 5px;
+        font-size: 18px;
+      }
+      .modal .sub {
+        margin: 0 0 17px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .field {
+        display: grid;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+      .field label {
+        color: #35455a;
+        font-weight: 700;
+        font-size: 12px;
+      }
+      .field input,
+      .field textarea {
+        width: 100%;
+        padding: 10px 11px;
+        border: 1px solid #cfd9e4;
+        border-radius: 9px;
+        color: var(--ink);
+        background: #fff;
+        outline: none;
+      }
+      .field textarea {
+        min-height: 82px;
+        resize: vertical;
+      }
+      .field input:focus,
+      .field textarea:focus {
+        border-color: #5b94f4;
+        box-shadow: 0 0 0 3px #3b82f621;
+      }
+      .field-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 17px;
+      }
+      .toast {
+        position: fixed;
+        z-index: 3000;
+        bottom: 20px;
+        left: 50%;
+        transform: translate(-50%, 20px);
+        opacity: 0;
+        pointer-events: none;
+        background: #17283b;
+        color: white;
+        border-radius: 10px;
+        padding: 11px 15px;
+        font-size: 12px;
+        box-shadow: 0 10px 25px #0003;
+        transition: 0.2s ease;
+        max-width: calc(100vw - 30px);
+        text-align: center;
+      }
+      .toast.show {
+        transform: translate(-50%, 0);
+        opacity: 1;
+      }
+      .leaflet-popup-content-wrapper {
+        border-radius: 10px;
+      }
+      .popup-title {
+        font-weight: 800;
+        font-size: 13px;
+        margin-bottom: 5px;
+      }
+      .popup-note {
+        font-size: 12px;
+        color: #506175;
+        white-space: pre-wrap;
+        line-height: 1.45;
+        max-width: 245px;
+      }
+      .popup-coords {
+        color: #6b7a8b;
+        font-size: 10px;
+        margin-top: 7px;
+        font-family: monospace;
+      }
+      .custom-marker-wrapper {
+        background: transparent;
+        border: none;
+      }
+      .point-pin {
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        border: 3px solid #fff;
+        border-radius: 50% 50% 50% 5px;
+        transform: rotate(-45deg);
+        box-shadow: 0 3px 8px #0005;
+        color: white;
+        font-size: 10px;
+        font-weight: 900;
+      }
+      .point-pin span {
+        transform: rotate(45deg);
+        display: block;
+      }
+      .leaflet-control-attribution {
+        font-size: 9px !important;
+      }
+      @media (max-width: 900px) {
+        .topbar {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .keybar {
+          width: 100%;
+          justify-content: flex-start;
+        }
+        .layout {
+          height: auto;
+          min-height: 0;
+          grid-template-columns: 1fr;
+        }
+        .sidebar {
+          max-height: 45vh;
+          border-right: 0;
+          border-bottom: 1px solid #dbe3ec;
+        }
+        .map-wrap {
+          height: 58vh;
+          min-height: 390px;
+        }
+        #map {
+          min-height: 390px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">🛰️</div>
+        <div>
+          <h1>BẢN ĐỒ ĐIỀU HÀNH ỨNG CỨU</h1>
+          <p>Tỉnh Quảng Ngãi · Quản lý các điểm tập kết & ứng cứu</p>
+        </div>
+      </div>
+      <div class="keybar">
+        <button class="btn btn-layer active" id="btnGoogleHybrid">
+          🛰️ Vệ tinh Google
+        </button>
+        <button class="btn btn-layer" id="btnGoogleRoad">
+          🗺️ Bản đồ đường bộ
+        </button>
+        <button class="btn btn-layer" id="btnOsm">🌐 OpenStreetMap</button>
+        <button
+          class="btn btn-light"
+          id="btnFitProvince"
+          title="Thu phóng nhìn toàn cảnh tỉnh Quảng Ngãi"
+        >
+          📍 Toàn tỉnh Quảng Ngãi
+        </button>
+        <button
+          class="btn btn-light"
+          id="toggleSidebar"
+          aria-controls="sidebar"
+          aria-expanded="true"
+        >
+          ☰ Ẩn bảng bên trái
+        </button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar" id="sidebar">
+        <section class="section">
+          <div class="section-title">
+            Trạng thái bản đồ <small id="pointCount">1 điểm</small>
+          </div>
+          <div class="map-state" id="mapStatus">
+            <div class="state-icon">✅</div>
+            <div>
+              <strong>Bản đồ Quảng Ngãi đã sẵn sàng</strong><br />Đang hiển thị
+              trực tiếp lớp bản đồ Google Maps (không cần API key).
+            </div>
+          </div>
+          <p class="help">
+            Các điểm được lưu tự động trong trình duyệt trên máy này. Bạn có thể
+            chuyển đổi chế độ Vệ tinh / Đường bộ ở góc trên bên phải.
+          </p>
+        </section>
+
+        <section class="section">
+          <div class="section-title">Thêm điểm lên bản đồ</div>
+          <div class="action-list">
+            <button class="btn btn-add" id="addGather">
+              <span class="plus gather">+</span
+              ><span
+                ><strong>Thêm điểm tập kết</strong><br /><small
+                  >Nhấn nút rồi chọn vị trí trên bản đồ</small
+                ></span
+              >
+            </button>
+            <button class="btn btn-add" id="addResponse">
+              <span class="plus response">+</span
+              ><span
+                ><strong>Thêm điểm ứng cứu</strong><br /><small
+                  >Nhấn nút rồi chọn vị trí trên bản đồ</small
+                ></span
+              >
+            </button>
+          </div>
+          <div class="active-hint" id="activeHint">
+            Chế độ thêm điểm đang bật. Nhấn vào vị trí mong muốn trên bản đồ để
+            đặt ghim. Nhấn Esc để hủy.
+          </div>
+          <p class="help">
+            Muốn đổi vị trí, kéo trực tiếp ghim trên bản đồ. Có thể bấm “Sửa” để
+            nhập tọa độ chính xác và chỉnh chú thích.
+          </p>
+        </section>
+
+        <section class="section">
+          <div class="section-title">
+            Vẽ đường đi <small id="routeCount">0 đường</small>
+          </div>
+          <div class="route-controls">
+            <button class="btn btn-add" id="startRoute">
+              <span class="plus" style="background: #7c3aed">↗</span
+              ><span
+                ><strong>Bắt đầu vẽ đường</strong><br /><small
+                  >Nhấn nhiều điểm trên bản đồ để tạo đường</small
+                ></span
+              >
+            </button>
+            <button class="btn btn-primary" id="finishRoute" disabled>
+              Hoàn tất đường
+            </button>
+            <button class="btn btn-light" id="cancelRoute" disabled>
+              Hủy vẽ
+            </button>
+            <div class="field">
+              <label for="routeName">Tên đường</label>
+              <input
+                id="routeName"
+                maxlength="120"
+                placeholder="Ví dụ: Tuyến tiếp cận khu vực"
+              />
+            </div>
+            <div class="field">
+              <label for="routeColor">Màu đường</label>
+              <input
+                id="routeColor"
+                type="color"
+                value="#e11d48"
+                style="
+                  width: 100%;
+                  height: 40px;
+                  padding: 4px;
+                  border: 1px solid #cfd9e4;
+                  border-radius: 8px;
+                  background: #fff;
+                "
+              />
+            </div>
+            <div class="field">
+              <label for="routeNote">Chú thích đường</label>
+              <textarea
+                id="routeNote"
+                maxlength="1000"
+                rows="3"
+                placeholder="Ghi chú về tuyến đường..."
+              ></textarea>
+            </div>
+          </div>
+          <p class="help" id="routeHint">
+            Chọn màu, nhập tên/chú thích rồi bấm “Bắt đầu vẽ đường”. Mỗi lần
+            nhấn bản đồ sẽ thêm một điểm; cần ít nhất 2 điểm để hoàn tất.
+          </p>
+        </section>
+
+        <section class="section">
+          <div class="section-title">Danh sách đường</div>
+          <div id="routeList" class="point-list"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-title">Chú giải màu</div>
+          <div class="legend">
+            <div class="legend-row">
+              <span class="legend-dot" style="background: var(--red)"></span
+              ><span><strong>Đỏ</strong> — Điểm chính UBND</span>
+            </div>
+            <div class="legend-row">
+              <span class="legend-dot" style="background: var(--blue)"></span
+              ><span><strong>Xanh dương</strong> — Điểm tập kết</span>
+            </div>
+            <div class="legend-row">
+              <span class="legend-dot" style="background: var(--orange)"></span
+              ><span><strong>Cam</strong> — Điểm ứng cứu</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-title">
+            Danh sách điểm <small id="countDetail">1 điểm</small>
+          </div>
+          <div id="pointList" class="point-list"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-title">Dữ liệu bản đồ</div>
+          <div class="foot-actions">
+            <button class="btn btn-light" id="exportData">Xuất JSON</button>
+            <button class="btn btn-light" id="importData">Nhập JSON</button>
+            <input
+              type="file"
+              id="importFile"
+              accept="application/json,.json"
+              hidden
+            />
+            <button class="btn btn-danger" id="resetData">Khôi phục</button>
+          </div>
+          <p class="help">
+            Xuất JSON để sao lưu hoặc chuyển danh sách điểm sang máy khác.
+          </p>
+        </section>
+      </aside>
+
+      <section class="map-wrap">
+        <div id="map" aria-label="Bản đồ khu vực Quảng Ngãi"></div>
+        <div class="map-chip">
+          <strong>Quảng Ngãi · Bản đồ điểm điều hành</strong>
+          <span id="mapInstruction"
+            >Kéo ghim để đổi vị trí · Nhấn ghim để xem chú thích</span
+          >
+        </div>
+        <div class="map-bottom" id="mapAttribution">
+          Bản đồ: Google Maps Hybrid (Vệ tinh + Tên đường)
+        </div>
+      </section>
+    </main>
+
+    <div
+      class="modal-backdrop"
+      id="editBackdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="editTitle"
+    >
+      <form class="modal" id="editForm">
+        <h2 id="editTitle">Sửa thông tin điểm</h2>
+        <p class="sub" id="editSubtitle">
+          Sửa tên, chú thích hoặc tọa độ của điểm.
+        </p>
+        <input id="editId" type="hidden" />
+        <div class="field">
+          <label for="editName">Tên điểm</label>
+          <input id="editName" maxlength="120" required />
+        </div>
+        <div class="field">
+          <label for="editNote">Chú thích nhỏ</label>
+          <textarea
+            id="editNote"
+            maxlength="1000"
+            placeholder="Ví dụ: vị trí tập kết phương tiện, đầu mối liên hệ..."
+          ></textarea>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="editLat">Vĩ độ (Latitude)</label
+            ><input
+              id="editLat"
+              type="number"
+              min="-90"
+              max="90"
+              step="any"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="editLng">Kinh độ (Longitude)</label
+            ><input
+              id="editLng"
+              type="number"
+              min="-180"
+              max="180"
+              step="any"
+              required
+            />
+          </div>
+        </div>
+        <p class="help">
+          Bạn cũng có thể kéo ghim trên bản đồ để cập nhật tọa độ.
+        </p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-light" id="cancelEdit">
+            Hủy
+          </button>
+          <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+        </div>
+      </form>
+    </div>
+    <div class="toast" id="toast" role="status"></div>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script id="embedded-map-data" type="application/json">
+      {
+        "app": "Bản đồ điều hành ứng cứu Quảng Ngãi",
+        "version": 2,
+        "exportedAt": "2026-10-24T03:25:44.104Z",
+        "points": [
+          {
+            "id": "ubnd-main",
+            "type": "ubnd",
+            "name": "UBND phường Trà câu",
+            "note": "Vị trí giao nhiệm vụ",
+            "lat": 14.849682650781226,
+            "lng": 108.93895983695985,
+            "defaultPosition": false
+          },
+          {
+            "id": "pt-mvko847e-v6thx",
+            "type": "gather",
+            "name": "Trường THCS Văn Thuận",
+            "note": "Điểm tập kết",
+            "lat": 14.846937626416407,
+            "lng": 108.94395411014558,
+            "defaultPosition": false
+          },
+          {
+            "id": "pt-mvkoa63y-douud",
+            "type": "response",
+            "name": "Điểm ứng cứu KDC 5,6,7 TDP Thủy Triều",
+            "note": "",
+            "lat": 14.839660451617478,
+            "lng": 108.94708156585695,
+            "defaultPosition": false
+          },
+          {
+            "id": "pt-mvkopnrk-lptll",
+            "type": "response",
+            "name": "Đầm bến nứa",
+            "note": "",
+            "lat": 14.850726761172242,
+            "lng": 108.9333808414945,
+            "defaultPosition": false
+          },
+          {
+            "id": "pt-mvkrr18w-gvasp",
+            "type": "gather",
+            "name": "Công An Phường",
+            "note": "Điểm tập kết",
+            "lat": 14.868371780104036,
+            "lng": 108.92849922180177,
+            "defaultPosition": false
+          },
+          {
+            "id": "pt-mvkrwxjy-1afjd",
+            "type": "response",
+            "name": "KDC 2,3 TDP Vinh Hiển",
+            "note": "Vị trí ứng cứu",
+            "lat": 14.866892320789427,
+            "lng": 108.92671823501588,
+            "defaultPosition": false
+          },
+          {
+            "id": "pt-mvksf90y-hmh0a",
+            "type": "gather",
+            "name": "Đảng ủy",
+            "note": "Nước biển dâng",
+            "lat": 14.848455175136571,
+            "lng": 108.97557404012174,
+            "defaultPosition": false
+          },
+          {
+            "id": "pt-mvkv5e9b-lxqrg",
+            "type": "response",
+            "name": "TDP Hải Tân",
+            "note": "Khu vực nước biển dâng",
+            "lat": 14.83225055514527,
+            "lng": 108.99180005954473,
+            "defaultPosition": false
+          }
+        ],
+        "routes": [
+          {
+            "id": "pt-mvkod77r-w8azb",
+            "name": "Đường đi 1",
+            "note": "",
+            "color": "#e11d48",
+            "style": "single",
+            "innerColor": "#FFE600",
+            "latlngs": [
+              {
+                "lat": 14.849666368787448,
+                "lng": 108.93895983695985
+              },
+              {
+                "lat": 14.849596413646884,
+                "lng": 108.93891692161561
+              },
+              {
+                "lat": 14.849531640348397,
+                "lng": 108.93883913755418
+              },
+              {
+                "lat": 14.849503140090889,
+                "lng": 108.93879354000093
+              },
+              {
+                "lat": 14.849464276097372,
+                "lng": 108.93871307373048
+              },
+              {
+                "lat": 14.849443548631271,
+                "lng": 108.93866479396821
+              },
+              {
+                "lat": 14.849332138467036,
+                "lng": 108.93871843814851
+              },
+              {
+                "lat": 14.848147952492383,
+                "lng": 108.93930315971376
+              },
+              {
+                "lat": 14.846707380093509,
+                "lng": 108.94002199172974
+              },
+              {
+                "lat": 14.84671707880431,
+                "lng": 108.94023925065997
+              },
+              {
+                "lat": 14.846768898119484,
+                "lng": 108.9412021636963
+              },
+              {
+                "lat": 14.846779261981034,
+                "lng": 108.94161522388458
+              },
+              {
+                "lat": 14.846776671015709,
+                "lng": 108.94185662269594
+              },
+              {
+                "lat": 14.846761125223015,
+                "lng": 108.94254595041276
+              },
+              {
+                "lat": 14.846748170394905,
+                "lng": 108.94300997257233
+              },
+              {
+                "lat": 14.846732624600175,
+                "lng": 108.94335865974428
+              },
+              {
+                "lat": 14.846742988463443,
+                "lng": 108.94376099109651
+              },
+              {
+                "lat": 14.846807762597741,
+                "lng": 108.9437958598137
+              },
+              {
+                "lat": 14.846859581891197,
+                "lng": 108.94384682178499
+              },
+              {
+                "lat": 14.84689844635312,
+                "lng": 108.94388437271118
+              },
+              {
+                "lat": 14.84693471984463,
+                "lng": 108.94391924142839
+              }
+            ]
+          },
+          {
+            "id": "pt-mvkoevyz-sczpc",
+            "name": "Đường đi 2",
+            "note": "",
+            "color": "#1d2ae2",
+            "style": "single",
+            "innerColor": "#FFE600",
+            "latlngs": [
+              {
+                "lat": 14.8469145928099,
+                "lng": 108.94400238990785
+              },
+              {
+                "lat": 14.846728043342823,
+                "lng": 108.9441365003586
+              },
+              {
+                "lat": 14.84671249754663,
+                "lng": 108.944388628006
+              },
+              {
+                "lat": 14.846691769816633,
+                "lng": 108.94467294216157
+              },
+              {
+                "lat": 14.846702133681886,
+                "lng": 108.94497871398927
+              },
+              {
+                "lat": 14.846722861410878,
+                "lng": 108.9453810453415
+              },
+              {
+                "lat": 14.846743589137898,
+                "lng": 108.94589066505434
+              },
+              {
+                "lat": 14.846769498793876,
+                "lng": 108.94612669944765
+              },
+              {
+                "lat": 14.846774680724689,
+                "lng": 108.94630372524263
+              },
+              {
+                "lat": 14.845603561200386,
+                "lng": 108.94649684429169
+              },
+              {
+                "lat": 14.843774321991791,
+                "lng": 108.94675433635713
+              },
+              {
+                "lat": 14.843079932516794,
+                "lng": 108.94683480262758
+              },
+              {
+                "lat": 14.842198987436031,
+                "lng": 108.9469474554062
+              },
+              {
+                "lat": 14.84133358494998,
+                "lng": 108.94702255725862
+              },
+              {
+                "lat": 14.840893109300602,
+                "lng": 108.9470547437668
+              },
+              {
+                "lat": 14.840245349362705,
+                "lng": 108.94713521003725
+              },
+              {
+                "lat": 14.839924059713601,
+                "lng": 108.94720494747162
+              },
+              {
+                "lat": 14.839758232611155,
+                "lng": 108.9471995830536
+              },
+              {
+                "lat": 14.839613133792197,
+                "lng": 108.94718885421754
+              },
+              {
+                "lat": 14.839613133792197,
+                "lng": 108.94712448120119
+              }
+            ]
+          },
+          {
+            "id": "pt-mvkosu6t-gujv8",
+            "name": "Đường đi 4",
+            "note": "",
+            "color": "#1b17de",
+            "style": "single",
+            "innerColor": "#FFE600",
+            "latlngs": [
+              {
+                "lat": 14.849693594807718,
+                "lng": 108.93888473510744
+              },
+              {
+                "lat": 14.849610685019448,
+                "lng": 108.9388257265091
+              },
+              {
+                "lat": 14.849527775199384,
+                "lng": 108.9386969804764
+              },
+              {
+                "lat": 14.84953813892861,
+                "lng": 108.93857359886171
+              },
+              {
+                "lat": 14.849589957567417,
+                "lng": 108.93836975097658
+              },
+              {
+                "lat": 14.849766140846356,
+                "lng": 108.93827319145204
+              },
+              {
+                "lat": 14.849802413856548,
+                "lng": 108.93799960613252
+              },
+              {
+                "lat": 14.849854232431973,
+                "lng": 108.93761873245239
+              },
+              {
+                "lat": 14.849895687283361,
+                "lng": 108.93739342689516
+              },
+              {
+                "lat": 14.849973415108263,
+                "lng": 108.93708229064943
+              },
+              {
+                "lat": 14.850061506609377,
+                "lng": 108.93674969673158
+              },
+              {
+                "lat": 14.850128870674226,
+                "lng": 108.93648147583009
+              },
+              {
+                "lat": 14.850201416566735,
+                "lng": 108.93618643283845
+              },
+              {
+                "lat": 14.85025841689377,
+                "lng": 108.9359074831009
+              },
+              {
+                "lat": 14.850346508278705,
+                "lng": 108.93563926219942
+              },
+              {
+                "lat": 14.85041387225469,
+                "lng": 108.93515646457674
+              },
+              {
+                "lat": 14.850465690683478,
+                "lng": 108.93492043018342
+              },
+              {
+                "lat": 14.850496781734803,
+                "lng": 108.93452346324922
+              },
+              {
+                "lat": 14.850574509343502,
+                "lng": 108.9341050386429
+              },
+              {
+                "lat": 14.850605600379152,
+                "lng": 108.9338529109955
+              },
+              {
+                "lat": 14.850652236924251,
+                "lng": 108.93360078334808
+              },
+              {
+                "lat": 14.850667782437045,
+                "lng": 108.9334398508072
+              },
+              {
+                "lat": 14.850683327948719,
+                "lng": 108.93340229988098
+              }
+            ]
+          },
+          {
+            "id": "pt-mvkrqk7m-rnhxg",
+            "name": "Đường đi 5",
+            "note": "",
+            "color": "#e31616",
+            "style": "single",
+            "innerColor": "#FFE600",
+            "latlngs": [
+              {
+                "lat": 14.849737672858934,
+                "lng": 108.9388793706894
+              },
+              {
+                "lat": 14.849584807943266,
+                "lng": 108.93854409456254
+              },
+              {
+                "lat": 14.850100402734588,
+                "lng": 108.93825173377992
+              },
+              {
+                "lat": 14.851477087579072,
+                "lng": 108.93745243549347
+              },
+              {
+                "lat": 14.852554903035427,
+                "lng": 108.93684089183809
+              },
+              {
+                "lat": 14.853155990089089,
+                "lng": 108.93652975559236
+              },
+              {
+                "lat": 14.853663803710505,
+                "lng": 108.93628835678102
+              },
+              {
+                "lat": 14.854207888408855,
+                "lng": 108.93605232238771
+              },
+              {
+                "lat": 14.854612064726282,
+                "lng": 108.93587529659273
+              },
+              {
+                "lat": 14.85550332265129,
+                "lng": 108.93547832965852
+              },
+              {
+                "lat": 14.856094038086855,
+                "lng": 108.935204744339
+              },
+              {
+                "lat": 14.856767658980493,
+                "lng": 108.93488287925722
+              },
+              {
+                "lat": 14.857368734311876,
+                "lng": 108.93463611602785
+              },
+              {
+                "lat": 14.858042351229962,
+                "lng": 108.93436253070833
+              },
+              {
+                "lat": 14.858363613943228,
+                "lng": 108.93422842025758
+              },
+              {
+                "lat": 14.858778145770337,
+                "lng": 108.93404603004457
+              },
+              {
+                "lat": 14.859270401281558,
+                "lng": 108.93383681774141
+              },
+              {
+                "lat": 14.860187548030595,
+                "lng": 108.9334559440613
+              },
+              {
+                "lat": 14.860581349959116,
+                "lng": 108.93331646919252
+              },
+              {
+                "lat": 14.861032148653528,
+                "lng": 108.9331501722336
+              },
+              {
+                "lat": 14.861529580603433,
+                "lng": 108.93295705318452
+              },
+              {
+                "lat": 14.86182493028146,
+                "lng": 108.93284976482393
+              },
+              {
+                "lat": 14.862778337011315,
+                "lng": 108.93243670463563
+              },
+              {
+                "lat": 14.864336575369007,
+                "lng": 108.9318358898163
+              },
+              {
+                "lat": 14.865631948850915,
+                "lng": 108.93126726150514
+              },
+              {
+                "lat": 14.86693766388016,
+                "lng": 108.93073081970216
+              },
+              {
+                "lat": 14.867963587955012,
+                "lng": 108.93030166625977
+              },
+              {
+                "lat": 14.868668260251855,
+                "lng": 108.93004417419435
+              },
+              {
+                "lat": 14.869324689644253,
+                "lng": 108.92980277538301
+              },
+              {
+                "lat": 14.869278057131666,
+                "lng": 108.92954528331758
+              },
+              {
+                "lat": 14.869178823598334,
+                "lng": 108.92929047346117
+              },
+              {
+                "lat": 14.86911405617325,
+                "lng": 108.92914026975633
+              },
+              {
+                "lat": 14.869064832917177,
+                "lng": 108.92902761697772
+              },
+              {
+                "lat": 14.868994884060283,
+                "lng": 108.92887204885486
+              },
+              {
+                "lat": 14.86894047937816,
+                "lng": 108.92881304025651
+              },
+              {
+                "lat": 14.868888665382404,
+                "lng": 108.92880767583848
+              },
+              {
+                "lat": 14.868844623476233,
+                "lng": 108.92880767583848
+              },
+              {
+                "lat": 14.868795400158712,
+                "lng": 108.92882376909257
+              },
+              {
+                "lat": 14.868691772085112,
+                "lng": 108.92883181571962
+              },
+              {
+                "lat": 14.868585553258054,
+                "lng": 108.9288452267647
+              },
+              {
+                "lat": 14.868479334378693,
+                "lng": 108.9288452267647
+              },
+              {
+                "lat": 14.86837829685958,
+                "lng": 108.92881304025651
+              },
+              {
+                "lat": 14.868360161915227,
+                "lng": 108.92870038747789
+              },
+              {
+                "lat": 14.868362752621668,
+                "lng": 108.92865210771562
+              }
+            ]
+          },
+          {
+            "id": "pt-mvks0497-2gggz",
+            "name": "Đường đi 6",
+            "note": "",
+            "color": "#1639e3",
+            "style": "single",
+            "innerColor": "#FFE600",
+            "latlngs": [
+              {
+                "lat": 14.86842406103985,
+                "lng": 108.92850995063782
+              },
+              {
+                "lat": 14.868549710228539,
+                "lng": 108.9285233616829
+              },
+              {
+                "lat": 14.868632612745973,
+                "lng": 108.92853409051897
+              },
+              {
+                "lat": 14.868851527052962,
+                "lng": 108.92852067947388
+              },
+              {
+                "lat": 14.868701266369108,
+                "lng": 108.92823502421379
+              },
+              {
+                "lat": 14.868475875147144,
+                "lng": 108.92783269286156
+              },
+              {
+                "lat": 14.868260846520576,
+                "lng": 108.92744377255441
+              },
+              {
+                "lat": 14.868071724780357,
+                "lng": 108.92714336514474
+              },
+              {
+                "lat": 14.867862518471897,
+                "lng": 108.92682418227199
+              },
+              {
+                "lat": 14.867698166808081,
+                "lng": 108.92658948898317
+              },
+              {
+                "lat": 14.867604660992995,
+                "lng": 108.92662972211839
+              },
+              {
+                "lat": 14.867512690572733,
+                "lng": 108.92665788531306
+              },
+              {
+                "lat": 14.867434969060279,
+                "lng": 108.92667800188066
+              },
+              {
+                "lat": 14.867267867713698,
+                "lng": 108.9267008006573
+              },
+              {
+                "lat": 14.867183669311752,
+                "lng": 108.92671287059785
+              },
+              {
+                "lat": 14.866980297651557,
+                "lng": 108.92672225832942
+              },
+              {
+                "lat": 14.866938846079472,
+                "lng": 108.9267209172249
+              }
+            ]
+          },
+          {
+            "id": "pt-mvks48ae-9l3fp",
+            "name": "Đường đi 7",
+            "note": "",
+            "color": "#16e33f",
+            "style": "single",
+            "innerColor": "#FFE600",
+            "latlngs": [
+              {
+                "lat": 14.868444469410708,
+                "lng": 108.92857164144519
+              },
+              {
+                "lat": 14.868599911680565,
+                "lng": 108.92856627702714
+              },
+              {
+                "lat": 14.868724265415848,
+                "lng": 108.92856895923616
+              },
+              {
+                "lat": 14.868869344683082,
+                "lng": 108.92856627702714
+              },
+              {
+                "lat": 14.86889784238485,
+                "lng": 108.92856895923616
+              },
+              {
+                "lat": 14.868926340082838,
+                "lng": 108.92865210771562
+              },
+              {
+                "lat": 14.868972972671417,
+                "lng": 108.92873257398607
+              },
+              {
+                "lat": 14.869036584762926,
+                "lng": 108.9288854598999
+              },
+              {
+                "lat": 14.869087103374307,
+                "lng": 108.92900079488756
+              },
+              {
+                "lat": 14.869124668487915,
+                "lng": 108.92907321453094
+              },
+              {
+                "lat": 14.869164824291794,
+                "lng": 108.929168432951
+              },
+              {
+                "lat": 14.869198503347333,
+                "lng": 108.92927572131157
+              },
+              {
+                "lat": 14.869247726572938,
+                "lng": 108.9293856918812
+              },
+              {
+                "lat": 14.869272338181498,
+                "lng": 108.92946481704713
+              },
+              {
+                "lat": 14.869325447432539,
+                "lng": 108.9296016097069
+              },
+              {
+                "lat": 14.869351354379535,
+                "lng": 108.92967134714128
+              },
+              {
+                "lat": 14.869228296353645,
+                "lng": 108.92971560359001
+              },
+              {
+                "lat": 14.868992542886957,
+                "lng": 108.92980545759202
+              },
+              {
+                "lat": 14.868623720039468,
+                "lng": 108.9299476146698
+              },
+              {
+                "lat": 14.8683491053172,
+                "lng": 108.93004417419435
+              },
+              {
+                "lat": 14.865600473769621,
+                "lng": 108.93115997314455
+              },
+              {
+                "lat": 14.863413878499724,
+                "lng": 108.93207192420961
+              },
+              {
+                "lat": 14.862874998538649,
+                "lng": 108.93224358558656
+              },
+              {
+                "lat": 14.862853339019662,
+                "lng": 108.93222078680992
+              },
+              {
+                "lat": 14.862828726679155,
+                "lng": 108.93215239048006
+              },
+              {
+                "lat": 14.86274970809331,
+                "lng": 108.93186807632448
+              },
+              {
+                "lat": 14.862609806263846,
+                "lng": 108.93137723207475
+              },
+              {
+                "lat": 14.86246860895515,
+                "lng": 108.93091723322871
+              },
+              {
+                "lat": 14.862359615628488,
+                "lng": 108.93055111169816
+              },
+              {
+                "lat": 14.86224043978637,
+                "lng": 108.93017023801805
+              },
+              {
+                "lat": 14.862167897937237,
+                "lng": 108.9299234747887
+              },
+              {
+                "lat": 14.862123854659764,
+                "lng": 108.92976254224779
+              },
+              {
+                "lat": 14.862079811373347,
+                "lng": 108.92961233854297
+              },
+              {
+                "lat": 14.862046131207057,
+                "lng": 108.92947018146516
+              },
+              {
+                "lat": 14.862007321180059,
+                "lng": 108.92928913235666
+              },
+              {
+                "lat": 14.861987890309033,
+                "lng": 108.92910808324815
+              },
+              {
+                "lat": 14.861980117960115,
+                "lng": 108.9289149641991
+              },
+              {
+                "lat": 14.862007321180059,
+                "lng": 108.92875269055368
+              },
+              {
+                "lat": 14.862038410570092,
+                "lng": 108.92866015434267
+              },
+              {
+                "lat": 14.862079863083162,
+                "lng": 108.92854347825052
+              },
+              {
+                "lat": 14.862152404961888,
+                "lng": 108.92826586961748
+              },
+              {
+                "lat": 14.86219256206286,
+                "lng": 108.92807543277742
+              },
+              {
+                "lat": 14.862327282605051,
+                "lng": 108.92759934067728
+              },
+              {
+                "lat": 14.862507088043396,
+                "lng": 108.92691403627397
+              },
+              {
+                "lat": 14.862548540466483,
+                "lng": 108.92671823501588
+              },
+              {
+                "lat": 14.86404647219848,
+                "lng": 108.92671823501588
+              },
+              {
+                "lat": 14.865037317063107,
+                "lng": 108.92672896385194
+              },
+              {
+                "lat": 14.865218669229824,
+                "lng": 108.92671287059785
+              },
+              {
+                "lat": 14.865425080325512,
+                "lng": 108.92675042152406
+              },
+              {
+                "lat": 14.865695381706004,
+                "lng": 108.92680808901787
+              },
+              {
+                "lat": 14.865817146377818,
+                "lng": 108.9268147945404
+              },
+              {
+                "lat": 14.86602829133742,
+                "lng": 108.9268147945404
+              },
+              {
+                "lat": 14.866137102156168,
+                "lng": 108.92681747674943
+              },
+              {
+                "lat": 14.866642296221439,
+                "lng": 108.92677187919617
+              },
+              {
+                "lat": 14.866831419214211,
+                "lng": 108.92674505710603
+              },
+              {
+                "lat": 14.866862507909495,
+                "lng": 108.926739692688
+              },
+              {
+                "lat": 14.866880642979682,
+                "lng": 108.92674505710603
+              }
+            ]
+          },
+          {
+            "id": "pt-mvkv53k6-bvpvg",
+            "name": "Đường đi 8",
+            "note": "",
+            "color": "#1d24e2",
+            "style": "single",
+            "innerColor": "#FFE600",
+            "latlngs": [
+              {
+                "lat": 14.848444804568173,
+                "lng": 108.97540643997779
+              },
+              {
+                "lat": 14.848216651937198,
+                "lng": 108.97546547019758
+              },
+              {
+                "lat": 14.847827754851933,
+                "lng": 108.97552986680098
+              },
+              {
+                "lat": 14.847233173079735,
+                "lng": 108.97556826882693
+              },
+              {
+                "lat": 14.84672846863965,
+                "lng": 108.97557280573228
+              },
+              {
+                "lat": 14.846432904883576,
+                "lng": 108.97555670658143
+              },
+              {
+                "lat": 14.846168452759242,
+                "lng": 108.97550840912886
+              },
+              {
+                "lat": 14.845919556346658,
+                "lng": 108.97547621082717
+              },
+              {
+                "lat": 14.845722513150118,
+                "lng": 108.9754279133746
+              },
+              {
+                "lat": 14.84546843086838,
+                "lng": 108.97537424953842
+              },
+              {
+                "lat": 14.845302499421132,
+                "lng": 108.97535815038758
+              },
+              {
+                "lat": 14.845136567846522,
+                "lng": 108.97535815038758
+              },
+              {
+                "lat": 14.844944709304595,
+                "lng": 108.97540644784013
+              },
+              {
+                "lat": 14.844758035965219,
+                "lng": 108.9754332797582
+              },
+              {
+                "lat": 14.844509137928645,
+                "lng": 108.97550304274523
+              },
+              {
+                "lat": 14.844107952498304,
+                "lng": 108.9755966034963
+              },
+              {
+                "lat": 14.843869424501673,
+                "lng": 108.97563953456525
+              },
+              {
+                "lat": 14.84354774740638,
+                "lng": 108.97563738885708
+              },
+              {
+                "lat": 14.843301714314407,
+                "lng": 108.97561649603921
+              },
+              {
+                "lat": 14.843148744732893,
+                "lng": 108.9756084464638
+              },
+              {
+                "lat": 14.843039851066536,
+                "lng": 108.97558698092934
+              },
+              {
+                "lat": 14.842824656278898,
+                "lng": 108.97554673305217
+              },
+              {
+                "lat": 14.842715762449314,
+                "lng": 108.9755252675177
+              },
+              {
+                "lat": 14.842529087185282,
+                "lng": 108.97543672218801
+              },
+              {
+                "lat": 14.842200767825812,
+                "lng": 108.97525322581068
+              },
+              {
+                "lat": 14.841783339976711,
+                "lng": 108.97499832258882
+              },
+              {
+                "lat": 14.841491226433622,
+                "lng": 108.97479475086885
+              },
+              {
+                "lat": 14.841216397349054,
+                "lng": 108.974665957662
+              },
+              {
+                "lat": 14.841019349865864,
+                "lng": 108.97465522489475
+              },
+              {
+                "lat": 14.840905269661938,
+                "lng": 108.9746981559637
+              },
+              {
+                "lat": 14.840806745801027,
+                "lng": 108.97476255256716
+              },
+              {
+                "lat": 14.840665873880237,
+                "lng": 108.97486149553126
+              },
+              {
+                "lat": 14.840479196846417,
+                "lng": 108.97498760554629
+              },
+              {
+                "lat": 14.84038845100787,
+                "lng": 108.97502785342343
+              },
+              {
+                "lat": 14.840292519651431,
+                "lng": 108.97507883406777
+              },
+              {
+                "lat": 14.840201773734542,
+                "lng": 108.97510566598586
+              },
+              {
+                "lat": 14.840056580188323,
+                "lng": 108.97511639875314
+              },
+              {
+                "lat": 14.839911386544614,
+                "lng": 108.97512444832856
+              },
+              {
+                "lat": 14.83978390989877,
+                "lng": 108.97512929235707
+              },
+              {
+                "lat": 14.83964001244586,
+                "lng": 108.97514404991202
+              },
+              {
+                "lat": 14.839463705526192,
+                "lng": 108.97515209948747
+              },
+              {
+                "lat": 14.839419628773802,
+                "lng": 108.97516014906287
+              },
+              {
+                "lat": 14.839365181008459,
+                "lng": 108.97517624821373
+              },
+              {
+                "lat": 14.839302954974144,
+                "lng": 108.9752030801318
+              },
+              {
+                "lat": 14.839203134006702,
+                "lng": 108.97529028386562
+              },
+              {
+                "lat": 14.839102016616074,
+                "lng": 108.9754056611134
+              },
+              {
+                "lat": 14.838871261368093,
+                "lng": 108.97569544582878
+              },
+              {
+                "lat": 14.838700139339801,
+                "lng": 108.97589668521448
+              },
+              {
+                "lat": 14.838635320354324,
+                "lng": 108.9759999880991
+              },
+              {
+                "lat": 14.838565315828207,
+                "lng": 108.97609926619606
+              },
+              {
+                "lat": 14.83831252151742,
+                "lng": 108.97657399704441
+              },
+              {
+                "lat": 14.838142695429884,
+                "lng": 108.97692415357551
+              },
+              {
+                "lat": 14.838059726911156,
+                "lng": 108.97708246189224
+              },
+              {
+                "lat": 14.837978054744433,
+                "lng": 108.97715893285877
+              },
+              {
+                "lat": 14.83791453192678,
+                "lng": 108.97720588871543
+              },
+              {
+                "lat": 14.837629327209404,
+                "lng": 108.97737224660759
+              },
+              {
+                "lat": 14.837552840425795,
+                "lng": 108.97743664321104
+              },
+              {
+                "lat": 14.83740894148838,
+                "lng": 108.97754766938344
+              },
+              {
+                "lat": 14.837332454626823,
+                "lng": 108.97761206598685
+              },
+              {
+                "lat": 14.837215779701172,
+                "lng": 108.97774622557729
+              },
+              {
+                "lat": 14.83714447832672,
+                "lng": 108.97782135494793
+              },
+              {
+                "lat": 14.836913720990133,
+                "lng": 108.97812723881417
+              },
+              {
+                "lat": 14.836740004630496,
+                "lng": 108.97836738448109
+              },
+              {
+                "lat": 14.836636293304492,
+                "lng": 108.9784881281125
+              },
+              {
+                "lat": 14.836555916992637,
+                "lng": 108.97858338142173
+              },
+              {
+                "lat": 14.836412017391977,
+                "lng": 108.97871485782035
+              },
+              {
+                "lat": 14.83588740963201,
+                "lng": 108.97917032614924
+              },
+              {
+                "lat": 14.83556590309227,
+                "lng": 108.97944669490555
+              },
+              {
+                "lat": 14.83511475601305,
+                "lng": 108.97981965856702
+              },
+              {
+                "lat": 14.834723242555288,
+                "lng": 108.9801416415841
+              },
+              {
+                "lat": 14.834562488480012,
+                "lng": 108.98027580117454
+              },
+              {
+                "lat": 14.83435247087911,
+                "lng": 108.98043142629946
+              },
+              {
+                "lat": 14.834196902154407,
+                "lng": 108.98056826908173
+              },
+              {
+                "lat": 14.834095782423363,
+                "lng": 108.98068096313773
+              },
+              {
+                "lat": 14.833979105751867,
+                "lng": 108.98083122187903
+              },
+              {
+                "lat": 14.833769087584612,
+                "lng": 108.9811558880879
+              },
+              {
+                "lat": 14.833693895845544,
+                "lng": 108.9813356619391
+              },
+              {
+                "lat": 14.833616111260387,
+                "lng": 108.98152616855755
+              },
+              {
+                "lat": 14.833546105109821,
+                "lng": 108.98173277432686
+              },
+              {
+                "lat": 14.833514991257863,
+                "lng": 108.98188571625995
+              },
+              {
+                "lat": 14.833504619972873,
+                "lng": 108.98213793629002
+              },
+              {
+                "lat": 14.833502027151555,
+                "lng": 108.98237405716922
+              },
+              {
+                "lat": 14.833502027151555,
+                "lng": 108.98272823848802
+              },
+              {
+                "lat": 14.833507212794164,
+                "lng": 108.98295094340817
+              },
+              {
+                "lat": 14.833494248687398,
+                "lng": 108.98320852982185
+              },
+              {
+                "lat": 14.833499434330198,
+                "lng": 108.98356807752425
+              },
+              {
+                "lat": 14.833496841508804,
+                "lng": 108.9838149311707
+              },
+              {
+                "lat": 14.83347609893661,
+                "lng": 108.98421204355841
+              },
+              {
+                "lat": 14.833457949184305,
+                "lng": 108.98447499635569
+              },
+              {
+                "lat": 14.833457949184305,
+                "lng": 108.98456890806901
+              },
+              {
+                "lat": 14.833439799430476,
+                "lng": 108.98467086935774
+              },
+              {
+                "lat": 14.833411278385665,
+                "lng": 108.98478624660555
+              },
+              {
+                "lat": 14.83338535015984,
+                "lng": 108.98484527682534
+              },
+              {
+                "lat": 14.833351643461631,
+                "lng": 108.98490967342877
+              },
+              {
+                "lat": 14.833317936758178,
+                "lng": 108.98498748599123
+              },
+              {
+                "lat": 14.833255708984138,
+                "lng": 108.98511091281445
+              },
+              {
+                "lat": 14.83319607401723,
+                "lng": 108.98520214133596
+              },
+              {
+                "lat": 14.833032725980203,
+                "lng": 108.98539533114622
+              },
+              {
+                "lat": 14.832926420048604,
+                "lng": 108.98549460924313
+              },
+              {
+                "lat": 14.832786407278492,
+                "lng": 108.98562340244999
+              },
+              {
+                "lat": 14.832706029536189,
+                "lng": 108.98569316543703
+              },
+              {
+                "lat": 14.832623058932164,
+                "lng": 108.98576561161588
+              },
+              {
+                "lat": 14.832527124131616,
+                "lng": 108.98584879056192
+              },
+              {
+                "lat": 14.832407853779698,
+                "lng": 108.9859507518507
+              },
+              {
+                "lat": 14.832335254402878,
+                "lng": 108.98600709887867
+              },
+              {
+                "lat": 14.832249690820337,
+                "lng": 108.98607686186573
+              },
+              {
+                "lat": 14.832161534366572,
+                "lng": 108.98614930804453
+              },
+              {
+                "lat": 14.832070785038422,
+                "lng": 108.98620833826435
+              },
+              {
+                "lat": 14.83199040703025,
+                "lng": 108.98625931890872
+              },
+              {
+                "lat": 14.831910028992246,
+                "lng": 108.98633981466298
+              },
+              {
+                "lat": 14.831902250470852,
+                "lng": 108.98644445914354
+              },
+              {
+                "lat": 14.83189187910856,
+                "lng": 108.98656788596675
+              },
+              {
+                "lat": 14.831907436151807,
+                "lng": 108.98671814470809
+              },
+              {
+                "lat": 14.83191780751336,
+                "lng": 108.98685230429851
+              },
+              {
+                "lat": 14.831928178874405,
+                "lng": 108.98696499835452
+              },
+              {
+                "lat": 14.831933364554748,
+                "lng": 108.9870508604924
+              },
+              {
+                "lat": 14.831933364554748,
+                "lng": 108.98716355454837
+              },
+              {
+                "lat": 14.831951514434948,
+                "lng": 108.98728698137158
+              },
+              {
+                "lat": 14.831961885794389,
+                "lng": 108.9874372401129
+              },
+              {
+                "lat": 14.831977442832597,
+                "lng": 108.98763579630676
+              },
+              {
+                "lat": 14.831987814190791,
+                "lng": 108.98773775759551
+              },
+              {
+                "lat": 14.831998185548477,
+                "lng": 108.98787728356959
+              },
+              {
+                "lat": 14.832011149744897,
+                "lng": 108.9880329086945
+              },
+              {
+                "lat": 14.832018928262373,
+                "lng": 108.98814828594227
+              },
+              {
+                "lat": 14.83203189245756,
+                "lng": 108.98829854468362
+              },
+              {
+                "lat": 14.832037078135397,
+                "lng": 108.98846490257576
+              },
+              {
+                "lat": 14.83206559936136,
+                "lng": 108.98860979493345
+              },
+              {
+                "lat": 14.832078563553749,
+                "lng": 108.98887006453892
+              },
+              {
+                "lat": 14.832099306259934,
+                "lng": 108.98903642243108
+              },
+              {
+                "lat": 14.832122641802018,
+                "lng": 108.98917058202154
+              },
+              {
+                "lat": 14.832138198828673,
+                "lng": 108.9893986533253
+              },
+              {
+                "lat": 14.832169312878639,
+                "lng": 108.98968307165707
+              },
+              {
+                "lat": 14.832187462739055,
+                "lng": 108.98988699423452
+              },
+              {
+                "lat": 14.83224709798397,
+                "lng": 108.99083416094317
+              },
+              {
+                "lat": 14.832278212018261,
+                "lng": 108.99147007740189
+              }
+            ]
+          },
+          {
+            "id": "pt-mvlu54lg-yfh4d",
+            "name": "Đường đi 8",
+            "note": "",
+            "color": "#1d24e2",
+            "style": "double",
+            "innerColor": "#ffe600",
+            "latlngs": [
+              {
+                "lat": 14.846916436597716,
+                "lng": 108.94395722674962
+              },
+              {
+                "lat": 14.846714208984135,
+                "lng": 108.94392905323564
+              },
+              {
+                "lat": 14.846709023658233,
+                "lng": 108.94381770077554
+              },
+              {
+                "lat": 14.846711616321196,
+                "lng": 108.94371305629497
+              },
+              {
+                "lat": 14.846711616321196,
+                "lng": 108.94346888584036
+              },
+              {
+                "lat": 14.846711616321196,
+                "lng": 108.94325959687924
+              },
+              {
+                "lat": 14.8467310612925,
+                "lng": 108.94266258670176
+              },
+              {
+                "lat": 14.846751802593287,
+                "lng": 108.9419354417215
+              },
+              {
+                "lat": 14.846754395255743,
+                "lng": 108.94168188009554
+              },
+              {
+                "lat": 14.846732357623855,
+                "lng": 108.94086887297742
+              },
+              {
+                "lat": 14.846662355719419,
+                "lng": 108.94011623767497
+              },
+              {
+                "lat": 14.846611798774326,
+                "lng": 108.93993512222782
+              },
+              {
+                "lat": 14.84409949261948,
+                "lng": 108.94122404790107
+              },
+              {
+                "lat": 14.844042453337648,
+                "lng": 108.94148700069837
+              },
+              {
+                "lat": 14.843912818550253,
+                "lng": 108.94172312157758
+              },
+              {
+                "lat": 14.843762442099475,
+                "lng": 108.9420558373619
+              },
+              {
+                "lat": 14.843637992543865,
+                "lng": 108.94233488931005
+              },
+              {
+                "lat": 14.842517943319704,
+                "lng": 108.94379991203778
+              },
+              {
+                "lat": 14.840590684538771,
+                "lng": 108.94594797227222
+              },
+              {
+                "lat": 14.840038430988189,
+                "lng": 108.94655705681286
+              },
+              {
+                "lat": 14.839670261170928,
+                "lng": 108.94702661537946
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+    <script>
+      (() => {
+        "use strict";
+        const embeddedEl = document.getElementById("embedded-map-data");
+        let embeddedData = null;
+
+        try {
+          embeddedData = embeddedEl ? JSON.parse(embeddedEl.textContent) : null;
+        } catch (error) {
+          console.error("Dữ liệu JSON nhúng không hợp lệ:", error);
+        }
+
+        const STORAGE_KEY =
+          embeddedData && embeddedData.exportedAt
+            ? "quangngai_response_map_points_v1_" + embeddedData.exportedAt
+            : "quangngai_response_map_points_v1";
+
+        const ROUTE_STORAGE_KEY =
+          embeddedData && embeddedData.exportedAt
+            ? "quangngai_response_map_routes_v1_" + embeddedData.exportedAt
+            : "quangngai_response_map_routes_v1";
+        // Tọa độ chính xác Trụ sở UBND tỉnh Quảng Ngãi (52 Hùng Vương)
+        const QUANG_NGAI_CENTER = { lat: 15.12045, lng: 108.79865 };
+        // Khung giới hạn toàn tỉnh Quảng Ngãi (từ Bình Sơn đến Đức Phổ, Ba Tơ đến Lý Sơn)
+        const QUANG_NGAI_BOUNDS = [
+          [14.52, 108.15],
+          [15.45, 109.18],
+        ];
+        const COLORS = {
+          ubnd: "#dc3545",
+          gather: "#2563eb",
+          response: "#f97316",
+        };
+        const TYPE_NAMES = {
+          ubnd: "Điểm chính UBND",
+          gather: "Điểm tập kết",
+          response: "Điểm ứng cứu",
+        };
+        const DEFAULT_UBND = {
+          id: "ubnd-main",
+          type: "ubnd",
+          name: "UBND tỉnh Quảng Ngãi",
+          note: "Trụ sở chính: 52 Hùng Vương, TP. Quảng Ngãi, tỉnh Quảng Ngãi.",
+          lat: 15.12045,
+          lng: 108.79865,
+          defaultPosition: true,
+        };
+
+        const TILE_SOURCES = {
+          googleHybrid: {
+            url: "https://mt1.google.com/vt/lyrs=y&hl=vi&x={x}&y={y}&z={z}",
+            label: "Bản đồ: Google Maps Hybrid (Vệ tinh + Tên đường)",
+          },
+          googleRoad: {
+            url: "https://mt1.google.com/vt/lyrs=m&hl=vi&x={x}&y={y}&z={z}",
+            label: "Bản đồ: Google Maps Đường bộ (Hành chính)",
+          },
+          osm: {
+            url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            label: "Bản đồ: © OpenStreetMap contributors",
+          },
+        };
+
+        let points = loadPoints();
+        let routes = loadRoutes();
+        let drawingRoute = false;
+        let draftLatLngs = [];
+        let draftLine = null;
+        let addMode = null;
+        let leafletMap = null;
+        let baseTileLayer = null;
+        let leafletLayer = null;
+        let toastTimer = null;
+
+        const $ = (id) => document.getElementById(id);
+        const mapEl = $("map");
+        const layoutEl = document.querySelector(".layout");
+        const sidebarToggle = $("toggleSidebar");
+
+        sidebarToggle.addEventListener("click", () => {
+          const isCollapsed = layoutEl.classList.toggle("sidebar-collapsed");
+
+          sidebarToggle.textContent = isCollapsed
+            ? "☰ Hiện bảng bên trái"
+            : "✕ Ẩn bảng bên trái";
+
+          sidebarToggle.setAttribute("aria-expanded", String(!isCollapsed));
+
+          // Cập nhật kích thước bản đồ sau khi Sidebar đóng/mở
+          if (leafletMap) {
+            setTimeout(() => {
+              leafletMap.invalidateSize();
+            }, 200);
+          }
+        });
+        function safeText(value) {
+          return String(value ?? "").replace(
+            /[&<>"']/g,
+            (ch) =>
+              ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;",
+              })[ch],
+          );
+        }
+        function uid() {
+          return (
+            "pt-" +
+            Date.now().toString(36) +
+            "-" +
+            Math.random().toString(36).slice(2, 7)
+          );
+        }
+
+        function loadPoints() {
+          try {
+            const stored = JSON.parse(
+              localStorage.getItem(STORAGE_KEY) || "null",
+            );
+
+            const parsed =
+              embeddedData && Array.isArray(embeddedData.points)
+                ? embeddedData.points
+                : null;
+            if (Array.isArray(parsed) && parsed.length) {
+              const cleaned = parsed
+                .filter(
+                  (p) =>
+                    p &&
+                    ["ubnd", "gather", "response"].includes(p.type) &&
+                    Number.isFinite(Number(p.lat)) &&
+                    Number.isFinite(Number(p.lng)),
+                )
+                .map((p) => ({
+                  id: String(p.id || uid()),
+                  type: p.type,
+                  name: String(p.name || TYPE_NAMES[p.type]),
+                  note: String(p.note || ""),
+                  lat: Number(p.lat),
+                  lng: Number(p.lng),
+                  defaultPosition: Boolean(p.defaultPosition),
+                }))
+                .filter(
+                  (p) =>
+                    p.lat >= -90 &&
+                    p.lat <= 90 &&
+                    p.lng >= -180 &&
+                    p.lng <= 180,
+                );
+              if (!cleaned.some((p) => p.type === "ubnd"))
+                cleaned.unshift({ ...DEFAULT_UBND });
+              const mainIndex = cleaned.findIndex((p) => p.type === "ubnd");
+              if (mainIndex > 0) {
+                const [main] = cleaned.splice(mainIndex, 1);
+                cleaned.unshift(main);
+              }
+              return cleaned;
+            }
+          } catch (e) {
+            console.warn("Không đọc được dữ liệu đã lưu:", e);
+          }
+          return [{ ...DEFAULT_UBND }];
+        }
+
+        function loadRoutes() {
+          try {
+            const stored = JSON.parse(
+              localStorage.getItem(ROUTE_STORAGE_KEY) || "null",
+            );
+
+            const data =
+              embeddedData && Array.isArray(embeddedData.routes)
+                ? embeddedData.routes
+                : [];
+            if (!Array.isArray(data)) return [];
+            return data
+              .filter(
+                (r) => r && Array.isArray(r.latlngs) && r.latlngs.length >= 2,
+              )
+              .map((r) => ({
+                id: String(r.id || uid()),
+                name: String(r.name || "Đường đi"),
+                note: String(r.note || ""),
+                color: /^#[0-9a-f]{6}$/i.test(r.color) ? r.color : "#e11d48",
+                latlngs: r.latlngs
+                  .filter(
+                    (p) =>
+                      p &&
+                      Number.isFinite(Number(p.lat)) &&
+                      Number.isFinite(Number(p.lng)) &&
+                      Number(p.lat) >= -90 &&
+                      Number(p.lat) <= 90 &&
+                      Number(p.lng) >= -180 &&
+                      Number(p.lng) <= 180,
+                  )
+                  .map((p) => ({ lat: Number(p.lat), lng: Number(p.lng) })),
+              }))
+              .filter((r) => r.latlngs.length >= 2);
+          } catch (e) {
+            return [];
+          }
+        }
+        function saveRoutes() {
+          return;
+          try {
+            localStorage.setItem(ROUTE_STORAGE_KEY, JSON.stringify(routes));
+          } catch (e) {
+            showToast("Không thể lưu đường tự động. Hãy xuất JSON để sao lưu.");
+          }
+          $("routeCount").textContent = routes.length + " đường";
+        }
+        function renderRoutes() {
+          if (!leafletMap || !leafletLayer) return;
+          // Giữ các ghim điểm; chỉ xóa và dựng lại các lớp đường.
+          if (leafletLayer._routeLayers)
+            leafletLayer._routeLayers.forEach((layer) =>
+              leafletLayer.removeLayer(layer),
+            );
+          leafletLayer._routeLayers = [];
+          routes.forEach((route) => {
+            const line = L.polyline(route.latlngs, {
+              color: route.color,
+              weight: 5,
+              opacity: 0.9,
+            }).addTo(leafletLayer);
+            line.bindPopup(
+              '<div class="popup-title">' +
+                safeText(route.name) +
+                '</div><div class="popup-note">' +
+                safeText(route.note || "Chưa có chú thích.") +
+                "</div>",
+            );
+            leafletLayer._routeLayers.push(line);
+          });
+          const holder = $("routeList");
+          holder.innerHTML = routes.length
+            ? routes
+                .map(
+                  (route) =>
+                    '<article class="route-card"><div class="route-card-title"><span class="route-swatch" style="background:' +
+                    route.color +
+                    '"></span>' +
+                    safeText(route.name) +
+                    "</div>" +
+                    '<div class="route-card-note">' +
+                    safeText(route.note || "Chưa có chú thích.") +
+                    "</div>" +
+                    '<div class="coords">' +
+                    route.latlngs.length +
+                    " điểm tạo đường</div>" +
+                    '<div class="point-actions"><button class="btn btn-quiet" data-route-action="locate" data-id="' +
+                    safeText(route.id) +
+                    '">Tới đường</button>' +
+                    '<button class="btn btn-danger" data-route-action="delete" data-id="' +
+                    safeText(route.id) +
+                    '">Xóa</button></div></article>',
+                )
+                .join("")
+            : '<div class="empty-list">Chưa có đường nào.<br />Bấm “Bắt đầu vẽ đường” để tạo đường.</div>';
+          $("routeCount").textContent = routes.length + " đường";
+        }
+        function startRouteDrawing() {
+          if (drawingRoute) return;
+          drawingRoute = true;
+          draftLatLngs = [];
+          $("startRoute").classList.add("active");
+          $("finishRoute").disabled = false;
+          $("cancelRoute").disabled = false;
+          $("routeHint").textContent =
+            "Đang vẽ: nhấn các vị trí liên tiếp trên bản đồ. Bấm “Hoàn tất đường” khi xong.";
+          $("mapInstruction").textContent =
+            "Đang vẽ đường · Nhấn các điểm trên bản đồ";
+          mapEl.style.cursor = "crosshair";
+          showToast("Nhấn các vị trí trên bản đồ để vẽ đường.");
+        }
+        function stopRouteDrawing() {
+          drawingRoute = false;
+          draftLatLngs = [];
+          if (draftLine && leafletMap) leafletMap.removeLayer(draftLine);
+          draftLine = null;
+          $("startRoute").classList.remove("active");
+          $("finishRoute").disabled = true;
+          $("cancelRoute").disabled = true;
+          $("routeHint").textContent =
+            "Chọn màu, nhập tên/chú thích rồi bấm “Bắt đầu vẽ đường”. Mỗi lần nhấn bản đồ sẽ thêm một điểm; cần ít nhất 2 điểm để hoàn tất.";
+          $("mapInstruction").textContent =
+            "Kéo ghim để đổi vị trí · Nhấn ghim để xem chú thích";
+          mapEl.style.cursor = addMode ? "crosshair" : "";
+        }
+        function finishRouteDrawing() {
+          if (draftLatLngs.length < 2) {
+            showToast("Cần nhấn ít nhất 2 điểm để tạo đường.");
+            return;
+          }
+          const name =
+            $("routeName").value.trim() || "Đường đi " + (routes.length + 1);
+          const color = $("routeColor").value;
+          routes.push({
+            id: uid(),
+            name,
+            note: $("routeNote").value.trim(),
+            color,
+            latlngs: draftLatLngs.map((p) => ({ lat: p.lat, lng: p.lng })),
+          });
+          stopRouteDrawing();
+          saveRoutes();
+          renderRoutes();
+          showToast("Đã lưu đường đi.");
+        }
+        function savePoints() {
+          return;
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(points));
+          } catch (e) {
+            showToast("Không thể lưu tự động. Hãy xuất JSON để sao lưu.");
+          }
+          updateCounts();
+        }
+
+        function showToast(message) {
+          const el = $("toast");
+          el.textContent = message;
+          el.classList.add("show");
+          clearTimeout(toastTimer);
+          toastTimer = setTimeout(() => el.classList.remove("show"), 2800);
+        }
+
+        function updateCounts() {
+          const n = points.length;
+          $("pointCount").textContent = n + " điểm";
+          $("countDetail").textContent = n + " điểm";
+        }
+
+        function numberedCode(point) {
+          if (point.type === "ubnd") return "U";
+          const peers = points.filter((p) => p.type === point.type);
+          return (
+            (point.type === "gather" ? "T" : "Ứ") +
+            (peers.findIndex((p) => p.id === point.id) + 1)
+          );
+        }
+
+        function typeColor(type) {
+          return COLORS[type] || "#64748b";
+        }
+
+        function popupHtml(point) {
+          return (
+            '<div class="popup-title">' +
+            safeText(point.name) +
+            "</div>" +
+            '<div class="popup-note">' +
+            safeText(point.note || "Chưa có chú thích.") +
+            "</div>" +
+            '<div class="popup-coords">' +
+            Number(point.lat).toFixed(6) +
+            ", " +
+            Number(point.lng).toFixed(6) +
+            "</div>"
+          );
+        }
+
+        function renderList() {
+          const holder = $("pointList");
+          if (!points.length) {
+            holder.innerHTML =
+              '<div class="empty-list">Chưa có điểm nào.<br />Dùng nút phía trên để thêm điểm.</div>';
+            updateCounts();
+            return;
+          }
+          holder.innerHTML = points
+            .map((point) => {
+              const color = typeColor(point.type);
+              return (
+                '<article class="point-card" data-point-id="' +
+                safeText(point.id) +
+                '">' +
+                '<div class="point-head"><div class="point-bullet" style="background:' +
+                color +
+                '">' +
+                safeText(numberedCode(point)) +
+                "</div>" +
+                '<div class="point-meta"><div class="point-name">' +
+                safeText(point.name) +
+                '</div><div class="point-type">' +
+                safeText(TYPE_NAMES[point.type]) +
+                "</div></div></div>" +
+                '<div class="point-note">' +
+                safeText(point.note || "Chưa có chú thích.") +
+                "</div>" +
+                '<div class="coords">' +
+                Number(point.lat).toFixed(5) +
+                ", " +
+                Number(point.lng).toFixed(5) +
+                "</div>" +
+                '<div class="point-actions"><button class="btn btn-quiet" data-action="locate" data-id="' +
+                safeText(point.id) +
+                '">Tới điểm</button>' +
+                '<button class="btn btn-quiet" data-action="edit" data-id="' +
+                safeText(point.id) +
+                '">Sửa</button>' +
+                (point.type !== "ubnd"
+                  ? '<button class="btn btn-danger" data-action="delete" data-id="' +
+                    safeText(point.id) +
+                    '">Xóa</button>'
+                  : "") +
+                "</div></article>"
+              );
+            })
+            .join("");
+          updateCounts();
+        }
+
+        function renderMarkers() {
+          if (!leafletMap || !leafletLayer) return;
+          leafletLayer.clearLayers();
+          points.forEach((point) => {
+            const code = numberedCode(point);
+            const icon = L.divIcon({
+              className: "custom-marker-wrapper",
+              iconSize: [30, 34],
+              iconAnchor: [12, 30],
+              popupAnchor: [3, -27],
+              html:
+                '<div class="point-pin" style="background:' +
+                typeColor(point.type) +
+                '"><span>' +
+                safeText(code) +
+                "</span></div>",
+            });
+            const marker = L.marker([point.lat, point.lng], {
+              icon,
+              draggable: false,
+              title: point.name,
+              keyboard: true,
+            });
+            marker.bindPopup(popupHtml(point));
+            marker.on("dragend", (ev) => {
+              const pos = ev.target.getLatLng();
+              updatePointPosition(point.id, pos.lat, pos.lng);
+              showToast("Đã cập nhật vị trí: " + point.name);
+            });
+            marker.addTo(leafletLayer);
+          });
+          renderList();
+          renderRoutes();
+        }
+
+        function updatePointPosition(id, lat, lng) {
+          const point = points.find((p) => p.id === id);
+          if (!point) return;
+          point.lat = Number(lat);
+          point.lng = Number(lng);
+          point.defaultPosition = false;
+          savePoints();
+          renderMarkers();
+        }
+
+        function setAddMode(type) {
+          addMode = addMode === type ? null : type;
+          $("addGather").classList.toggle("active", addMode === "gather");
+          $("addResponse").classList.toggle("active", addMode === "response");
+          $("activeHint").classList.toggle("show", Boolean(addMode));
+          $("mapInstruction").textContent = addMode
+            ? "Đang thêm " +
+              TYPE_NAMES[addMode].toLowerCase() +
+              " · Nhấn vào vị trí trên bản đồ"
+            : "Kéo ghim để đổi vị trí · Nhấn ghim để xem chú thích";
+          if (leafletMap) mapEl.style.cursor = addMode ? "crosshair" : "";
+          if (addMode)
+            showToast(
+              "Nhấn vào bản đồ để đặt " +
+                TYPE_NAMES[addMode].toLowerCase() +
+                ".",
+            );
+        }
+
+        function placePoint(lat, lng) {
+          if (!addMode) return;
+          const type = addMode;
+          const number = points.filter((p) => p.type === type).length + 1;
+          const point = {
+            id: uid(),
+            type,
+            name: TYPE_NAMES[type] + " " + number,
+            note:
+              type === "gather"
+                ? "Bổ sung thông tin khu vực tập kết, phương tiện và lực lượng."
+                : "Bổ sung thông tin vị trí ứng cứu và nhiệm vụ dự kiến.",
+            lat: Number(lat),
+            lng: Number(lng),
+            defaultPosition: false,
+          };
+          points.push(point);
+          savePoints();
+          setAddMode(null);
+          renderMarkers();
+          openEdit(point.id);
+        }
+
+        function locatePoint(id) {
+          const point = points.find((p) => p.id === id);
+          if (!point || !leafletMap) return;
+          leafletMap.setView(
+            [point.lat, point.lng],
+            Math.max(leafletMap.getZoom(), 15),
+            { animate: true },
+          );
+          leafletLayer.eachLayer((layer) => {
+            const ll = layer.getLatLng();
+            if (
+              Math.abs(ll.lat - point.lat) < 1e-8 &&
+              Math.abs(ll.lng - point.lng) < 1e-8
+            )
+              layer.openPopup();
+          });
+        }
+
+        function openEdit(id) {
+          const point = points.find((p) => p.id === id);
+          if (!point) return;
+          $("editId").value = point.id;
+          $("editName").value = point.name;
+          $("editNote").value = point.note;
+          $("editLat").value = point.lat;
+          $("editLng").value = point.lng;
+          $("editTitle").textContent =
+            point.type === "ubnd"
+              ? "Sửa điểm chính UBND"
+              : "Sửa thông tin điểm";
+          $("editSubtitle").textContent =
+            TYPE_NAMES[point.type] + " · Chỉnh tên, chú thích hoặc tọa độ.";
+          $("editBackdrop").classList.add("open");
+          setTimeout(() => $("editName").focus(), 0);
+        }
+
+        function closeEdit() {
+          $("editBackdrop").classList.remove("open");
+        }
+
+        function switchMapLayer(sourceKey, buttonId) {
+          if (!leafletMap || !TILE_SOURCES[sourceKey]) return;
+          if (baseTileLayer) leafletMap.removeLayer(baseTileLayer);
+          baseTileLayer = L.tileLayer(TILE_SOURCES[sourceKey].url, {
+            maxZoom: 20,
+          }).addTo(leafletMap);
+          $("mapAttribution").textContent = TILE_SOURCES[sourceKey].label;
+          ["btnGoogleHybrid", "btnGoogleRoad", "btnOsm"].forEach((id) =>
+            $(id).classList.toggle("active", id === buttonId),
+          );
+        }
+
+        function initMap() {
+          if (leafletMap) {
+            leafletMap.remove();
+            leafletMap = null;
+          }
+          mapEl.innerHTML = "";
+          leafletMap = L.map("map", {
+            zoomControl: true,
+            preferCanvas: true,
+          }).setView([QUANG_NGAI_CENTER.lat, QUANG_NGAI_CENTER.lng], 13);
+          leafletLayer = L.layerGroup().addTo(leafletMap);
+          switchMapLayer("googleHybrid", "btnGoogleHybrid");
+          leafletMap.on("click", (event) => {
+            if (drawingRoute) {
+              draftLatLngs.push(event.latlng);
+              if (draftLine) draftLine.setLatLngs(draftLatLngs);
+              else
+                draftLine = L.polyline(draftLatLngs, {
+                  color: $("routeColor").value,
+                  weight: 5,
+                  dashArray: "8 6",
+                }).addTo(leafletMap);
+              return;
+            }
+            placePoint(event.latlng.lat, event.latlng.lng);
+          });
+          renderMarkers();
+          setTimeout(() => leafletMap && leafletMap.invalidateSize(), 100);
+        }
+
+        $("btnGoogleHybrid").addEventListener("click", () =>
+          switchMapLayer("googleHybrid", "btnGoogleHybrid"),
+        );
+        $("btnGoogleRoad").addEventListener("click", () =>
+          switchMapLayer("googleRoad", "btnGoogleRoad"),
+        );
+        $("btnOsm").addEventListener("click", () =>
+          switchMapLayer("osm", "btnOsm"),
+        );
+        $("btnFitProvince").addEventListener("click", () => {
+          if (leafletMap) {
+            leafletMap.fitBounds(QUANG_NGAI_BOUNDS, { padding: [20, 20] });
+            showToast("Đang hiển thị toàn cảnh tỉnh Quảng Ngãi.");
+          }
+        });
+
+        $("startRoute").addEventListener("click", startRouteDrawing);
+        $("finishRoute").addEventListener("click", finishRouteDrawing);
+        $("cancelRoute").addEventListener("click", () => {
+          stopRouteDrawing();
+          showToast("Đã hủy vẽ đường.");
+        });
+        $("routeColor").addEventListener("input", () => {
+          if (draftLine) draftLine.setStyle({ color: $("routeColor").value });
+        });
+        $("routeList").addEventListener("click", (e) => {
+          const button = e.target.closest("button[data-route-action]");
+          if (!button) return;
+          const route = routes.find((r) => r.id === button.dataset.id);
+          if (!route) return;
+          if (button.dataset.routeAction === "locate") {
+            leafletMap.fitBounds(L.latLngBounds(route.latlngs), {
+              padding: [35, 35],
+              maxZoom: 16,
+            });
+          } else if (
+            button.dataset.routeAction === "delete" &&
+            confirm('Xóa đường "' + route.name + '"?')
+          ) {
+            routes = routes.filter((r) => r.id !== route.id);
+            saveRoutes();
+            renderRoutes();
+            showToast("Đã xóa đường.");
+          }
+        });
+        $("addGather").addEventListener("click", () => setAddMode("gather"));
+        $("addResponse").addEventListener("click", () =>
+          setAddMode("response"),
+        );
+        $("pointList").addEventListener("click", (e) => {
+          const button = e.target.closest("button[data-action]");
+          if (!button) return;
+          const { action, id } = button.dataset;
+          if (action === "locate") locatePoint(id);
+          if (action === "edit") openEdit(id);
+          if (action === "delete") {
+            const point = points.find((p) => p.id === id);
+            if (!point) return;
+            if (confirm('Xóa "' + point.name + '" khỏi bản đồ?')) {
+              points = points.filter((p) => p.id !== id);
+              savePoints();
+              renderMarkers();
+              showToast("Đã xóa điểm.");
+            }
+          }
+        });
+        $("editForm").addEventListener("submit", (e) => {
+          e.preventDefault();
+          const point = points.find((p) => p.id === $("editId").value);
+          if (!point) return;
+          const lat = Number($("editLat").value),
+            lng = Number($("editLng").value);
+          if (
+            !Number.isFinite(lat) ||
+            lat < -90 ||
+            lat > 90 ||
+            !Number.isFinite(lng) ||
+            lng < -180 ||
+            lng > 180
+          ) {
+            showToast("Tọa độ không hợp lệ.");
+            return;
+          }
+          point.name = $("editName").value.trim() || TYPE_NAMES[point.type];
+          point.note = $("editNote").value.trim();
+          point.lat = lat;
+          point.lng = lng;
+          point.defaultPosition = false;
+          savePoints();
+          renderMarkers();
+          closeEdit();
+          if (leafletMap) leafletMap.panTo([lat, lng]);
+          showToast("Đã lưu thông tin điểm.");
+        });
+        $("cancelEdit").addEventListener("click", closeEdit);
+        $("editBackdrop").addEventListener("click", (e) => {
+          if (e.target === $("editBackdrop")) closeEdit();
+        });
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") {
+            closeEdit();
+            if (addMode) setAddMode(null);
+            if (drawingRoute) stopRouteDrawing();
+          }
+        });
+
+        $("exportData").addEventListener("click", () => {
+          const payload = {
+            app: "Bản đồ điều hành ứng cứu Quảng Ngãi",
+            version: 2,
+            exportedAt: new Date().toISOString(),
+            points,
+            routes,
+          };
+          const blob = new Blob([JSON.stringify(payload, null, 2)], {
+            type: "application/json;charset=utf-8",
+          });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "diem-ung-cuu-quang-ngai.json";
+          a.click();
+          URL.revokeObjectURL(url);
+          showToast("Đã xuất dữ liệu JSON.");
+        });
+
+        $("importData").addEventListener("click", () =>
+          $("importFile").click(),
+        );
+        $("importFile").addEventListener("change", async (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          try {
+            const json = JSON.parse(await file.text());
+            const incoming = Array.isArray(json) ? json : json.points;
+            if (!Array.isArray(incoming))
+              throw new Error("File không có danh sách points.");
+            const cleaned = incoming
+              .filter(
+                (p) =>
+                  p &&
+                  ["ubnd", "gather", "response"].includes(p.type) &&
+                  Number.isFinite(Number(p.lat)) &&
+                  Number.isFinite(Number(p.lng)) &&
+                  Number(p.lat) >= -90 &&
+                  Number(p.lat) <= 90 &&
+                  Number(p.lng) >= -180 &&
+                  Number(p.lng) <= 180,
+              )
+              .map((p) => ({
+                id: String(p.id || uid()),
+                type: p.type,
+                name: String(p.name || TYPE_NAMES[p.type]).slice(0, 120),
+                note: String(p.note || "").slice(0, 1000),
+                lat: Number(p.lat),
+                lng: Number(p.lng),
+                defaultPosition: Boolean(p.defaultPosition),
+              }));
+            if (!cleaned.some((p) => p.type === "ubnd"))
+              cleaned.unshift({ ...DEFAULT_UBND });
+            const mainIndex = cleaned.findIndex((p) => p.type === "ubnd");
+            if (mainIndex > 0) {
+              const [main] = cleaned.splice(mainIndex, 1);
+              cleaned.unshift(main);
+            }
+            if (!cleaned.length) throw new Error("Không tìm thấy điểm hợp lệ.");
+            if (
+              !confirm(
+                "Nhập " +
+                  cleaned.length +
+                  " điểm? Danh sách điểm hiện tại sẽ được thay thế.",
+              )
+            )
+              return;
+            points = cleaned;
+            if (!Array.isArray(json))
+              routes = Array.isArray(json.routes)
+                ? json.routes
+                    .filter(
+                      (r) =>
+                        r &&
+                        Array.isArray(r.latlngs) &&
+                        r.latlngs.length >= 2 &&
+                        r.latlngs.every(
+                          (p) =>
+                            Number.isFinite(Number(p.lat)) &&
+                            Number.isFinite(Number(p.lng)) &&
+                            Number(p.lat) >= -90 &&
+                            Number(p.lat) <= 90 &&
+                            Number(p.lng) >= -180 &&
+                            Number(p.lng) <= 180,
+                        ),
+                    )
+                    .map((r) => ({
+                      id: String(r.id || uid()),
+                      name: String(r.name || "Đường đi").slice(0, 120),
+                      note: String(r.note || "").slice(0, 1000),
+                      color: /^#[0-9a-f]{6}$/i.test(r.color)
+                        ? r.color
+                        : "#e11d48",
+                      latlngs: r.latlngs.map((p) => ({
+                        lat: Number(p.lat),
+                        lng: Number(p.lng),
+                      })),
+                    }))
+                : [];
+            savePoints();
+            saveRoutes();
+            renderMarkers();
+            renderRoutes();
+            showToast("Đã nhập dữ liệu thành công.");
+          } catch (err) {
+            alert("Không nhập được file JSON: " + err.message);
+          } finally {
+            e.target.value = "";
+          }
+        });
+
+        $("resetData").addEventListener("click", () => {
+          if (
+            !confirm(
+              "Khôi phục dữ liệu ban đầu? Tất cả điểm tập kết và ứng cứu đã thêm sẽ bị xóa.",
+            )
+          )
+            return;
+          points = [{ ...DEFAULT_UBND }];
+          routes = [];
+          savePoints();
+          saveRoutes();
+          renderMarkers();
+          renderRoutes();
+          if (leafletMap)
+            leafletMap.setView(
+              [QUANG_NGAI_CENTER.lat, QUANG_NGAI_CENTER.lng],
+              13,
+            );
+          showToast("Đã khôi phục dữ liệu ban đầu.");
+        });
+
+        renderList();
+        $("routeCount").textContent = routes.length + " đường";
+        if (window.L) initMap();
+      })();
+    </script>
+  </body>
+</html> -->
